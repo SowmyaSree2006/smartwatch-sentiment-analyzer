@@ -1,56 +1,105 @@
-# smartwatch-sentiment-analyzer
-Smartwatch Sentiment Analyzer is a Python-based NLP application that analyzes smartwatch reviews and classifies them as positive, neutral, or negative. It combines a traditional TF-IDF + Naive Bayes model with a transformer-based model to understand context, mixed opinions, and provide sentence-level sentiment insights.
-#  Smartwatch Sentiment Analyzer
+# Smartwatch Sentiment Analyzer
 
-An end-to-end NLP-based web application that analyzes customer smartwatch reviews and classifies them as **Positive**, **Neutral**, or **Negative** using both **Classical Machine Learning** and **Transformer-based Deep Learning models**.
+A web application that analyzes sentiment of smartwatch reviews using two different approaches:
+1. **Classical ML Model**: Naive Bayes classifier with TF-IDF vectorization
+2. **Transformer Model**: RoBERTa-based sentiment analysis model
 
----
+## Features
 
-##  Features
-- Dual-model sentiment prediction:
-  - TF-IDF + Naive Bayes (Fast & interpretable)
-  - RoBERTa Transformer (Context-aware & accurate)
-- Sentence-level sentiment analysis
-- Confidence score for predictions
-- Flask-based web interface
-- Real-time review analysis
+- Real-time sentiment analysis of review text
+- Side-by-side comparison of Classical ML vs Transformer models
+- Model performance comparison on dataset
+- Modern, responsive web interface
 
----
+## Installation
 
-##  Models Used
-### Classical ML
-- TF-IDF Vectorizer
-- Multinomial Naive Bayes
-- Logistic Regression (baseline)
-- Random Forest (comparison)
-
-### Transformer
-- RoBERTa (Hugging Face Transformers)
-
----
-
-## Dataset
-- Smartwatch & electronics reviews
-- Star ratings converted to sentiment:
-  - ⭐⭐ (1–2): Negative
-  - ⭐⭐⭐ (3): Neutral
-  - ⭐⭐⭐⭐–⭐⭐⭐⭐⭐ (4–5): Positive
-
----
-
-##  Tech Stack
-- Python 3.8+
-- NLTK
-- scikit-learn
-- Hugging Face Transformers
-- Flask
-- Pandas, NumPy
-
----
-
-##  Installation
-
+1. Install Python dependencies:
 ```bash
-git clone https://github.com/your-username/smartwatch-sentiment-analyzer.git
-cd smartwatch-sentiment-analyzer
 pip install -r requirements.txt
+```
+
+2. Make sure you have the dataset file at `Dataset/7817_1.csv`
+
+## Running the Application
+
+### Quick Start
+
+1. **Install dependencies:**
+```bash
+pip install -r requirements.txt
+```
+
+2. **Run the application:**
+```bash
+python app.py
+```
+
+3. **Open your browser:**
+```
+http://localhost:5000
+```
+
+### First Run
+
+On the first run, the application will:
+- Load and preprocess the dataset
+- Balance the data using SMOTE
+- Train a Naive Bayes classical ML model
+- Apply overfitting/underfitting prevention techniques
+- Download the Transformer model (may take a few minutes)
+- Start the Flask server
+
+**Note:** Initial training may take 2-5 minutes. You'll see detailed progress in the console.
+
+### What You'll See
+
+- **Training Output:** Detailed metrics for the Naive Bayes model
+- **Web Interface:** Clean UI showing all model predictions
+- **Sentence Analysis:** Transformer model provides sentence-level sentiment
+
+### Troubleshooting
+
+- **Port in use?** Change port in `app.py` (line 248)
+- **Missing dependencies?** Run `pip install -r requirements.txt`
+- **Memory issues?** Reduce `max_features` in `app.py` (line 169)
+
+## How It Works
+
+### Classical ML Model
+- Uses TF-IDF vectorization to convert text to numerical features
+- Trains a Naive Bayes classifier on the dataset
+- Fast inference but limited context understanding
+
+### Transformer Model
+- Uses pre-trained RoBERTa sentiment model (`cardiffnlp/twitter-roberta-base-sentiment-latest`)
+- Better at understanding context and nuances
+- Higher accuracy on complex sentiment analysis
+
+## Project Structure
+
+```
+Smart watch sentiment analyser/
+├── app.py                 # Flask backend
+├── templates/
+│   └── index.html        # Frontend HTML
+├── static/
+│   └── style.css         # Frontend CSS
+├── Dataset/
+│   └── 7817_1.csv       # Review dataset
+├── requirements.txt      # Python dependencies
+└── README.md            # This file
+```
+
+## Usage
+
+1. Enter a smartwatch review in the text area
+2. Click "Analyze Sentiment" to get predictions from both models
+3. Click "Compare Model Performance" to see accuracy comparison on the dataset
+
+## Model Comparison
+
+The transformer model typically shows improved accuracy over the classical ML model due to:
+- Better context understanding
+- Pre-training on large text corpora
+- Attention mechanisms that capture long-range dependencies
+

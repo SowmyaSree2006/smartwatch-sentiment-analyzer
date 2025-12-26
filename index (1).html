@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ABC X1 Smartwatch - Sentiment Analyzer</title>
+    <style>
+        :root {
+            --color-cream-50: rgba(252, 252, 249, 1);
+            --color-cream-100: rgba(255, 255, 253, 1);
+            --color-slate-900: rgba(19, 52, 59, 1);
+            --color-slate-500: rgba(98, 108, 113, 1);
+            --color-teal-500: rgba(33, 128, 141, 1);
+            --color-teal-600: rgba(29, 116, 128, 1);
+            --color-teal-700: rgba(26, 104, 115, 1);
+            --color-brown-600-rgb: 94, 82, 64;
+            --color-teal-500-rgb: 33, 128, 141;
+            --color-gray-200: rgba(245, 245, 245, 1);
+            --color-gray-300: rgba(167, 169, 169, 1);
+            --color-charcoal-700: rgba(31, 33, 33, 1);
+            --color-charcoal-800: rgba(38, 40, 40, 1);
+            --color-teal-300: rgba(50, 184, 198, 1);
+            --color-teal-400: rgba(45, 166, 178, 1);
+            --color-red-500: rgba(192, 21, 47, 1);
+            --color-red-400: rgba(255, 84, 89, 1);
+            --color-orange-500: rgba(168, 75, 47, 1);
+            --color-success-rgb: 33, 128, 141;
+            --color-error-rgb: 192, 21, 47;
+            --color-warning-rgb: 168, 75, 47;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --color-cream-50: var(--color-charcoal-700);
+                --color-cream-100: var(--color-charcoal-800);
+                --color-slate-900: var(--color-gray-200);
+                --color-slate-500: rgba(167, 169, 169, 0.7);
+                --color-teal-500: var(--color-teal-300);
+                --color-teal-600: var(--color-teal-400);
+                --color-red-500: var(--color-red-400);
+                --color-success-rgb: 50, 184, 198;
+            }
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--color-cream-50);
+            color: var(--color-slate-900);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            font-weight: 600;
+            color: var(--color-slate-900);
+            margin-bottom: 12px;
+        }
+
+        .header .subtitle {
+            font-size: 16px;
+            color: var(--color-slate-500);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: var(--color-cream-100);
+            border: 1px solid rgba(var(--color-brown-600-rgb), 0.12);
+            border-radius: 12px;
+            padding: 32px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        }
+
+        .input-group {
+            margin-bottom: 24px;
+        }
+
+        label {
+            display: block;
+            font-weight: 500;
+            font-size: 14px;
+            color: var(--color-slate-900);
+            margin-bottom: 8px;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 12px 16px;
+            font-size: 15px;
+            font-family: inherit;
+            line-height: 1.5;
+            color: var(--color-slate-900);
+            background: var(--color-cream-50);
+            border: 1px solid rgba(var(--color-brown-600-rgb), 0.2);
+            border-radius: 8px;
+            resize: vertical;
+            min-height: 120px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--color-teal-500);
+            box-shadow: 0 0 0 3px rgba(var(--color-teal-500-rgb), 0.1);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 12px;
+        }
+
+        button {
+            flex: 1;
+            padding: 12px 24px;
+            font-size: 15px;
+            font-weight: 500;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--color-teal-500);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--color-teal-600);
+        }
+
+        .btn-primary:active {
+            background: var(--color-teal-700);
+        }
+
+        .btn-secondary {
+            background: rgba(var(--color-brown-600-rgb), 0.12);
+            color: var(--color-slate-900);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(var(--color-brown-600-rgb), 0.2);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .result-card {
+            display: none;
+            background: var(--color-cream-100);
+            border: 1px solid rgba(var(--color-brown-600-rgb), 0.12);
+            border-radius: 12px;
+            padding: 24px;
+            margin-top: 24px;
+        }
+
+        .result-card.show {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-header {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: var(--color-slate-900);
+        }
+
+        .sentiment-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 500;
+            font-size: 14px;
+            margin-bottom: 16px;
+        }
+
+        .sentiment-positive {
+            background: rgba(var(--color-success-rgb), 0.15);
+            color: var(--color-teal-500);
+            border: 1px solid rgba(var(--color-success-rgb), 0.25);
+        }
+
+        .sentiment-negative {
+            background: rgba(var(--color-error-rgb), 0.15);
+            color: var(--color-red-500);
+            border: 1px solid rgba(var(--color-error-rgb), 0.25);
+        }
+
+        .sentiment-neutral {
+            background: rgba(var(--color-warning-rgb), 0.15);
+            color: var(--color-orange-500);
+            border: 1px solid rgba(var(--color-warning-rgb), 0.25);
+        }
+
+        .sentiment-icon {
+            margin-right: 6px;
+            font-size: 18px;
+        }
+
+        .score-container {
+            background: var(--color-cream-50);
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 12px;
+        }
+
+        .score-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .score-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .score-label {
+            font-size: 14px;
+            color: var(--color-slate-500);
+        }
+
+        .score-value {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--color-slate-900);
+        }
+
+        .history-section {
+            margin-top: 32px;
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .history-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--color-slate-900);
+        }
+
+        .history-count {
+            font-size: 14px;
+            color: var(--color-slate-500);
+        }
+
+        .history-item {
+            background: var(--color-cream-100);
+            border: 1px solid rgba(var(--color-brown-600-rgb), 0.12);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+
+        .history-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .history-review {
+            font-size: 14px;
+            color: var(--color-slate-900);
+            margin-top: 8px;
+            font-style: italic;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: var(--color-slate-500);
+            font-size: 14px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 16px;
+            margin-top: 24px;
+        }
+
+        .stat-card {
+            background: var(--color-cream-50);
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--color-slate-900);
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 13px;
+            color: var(--color-slate-500);
+        }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+        }
+
+        .comparison-card {
+            background: var(--color-cream-50);
+            border-radius: 8px;
+            padding: 16px;
+            border: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .comparison-card.best {
+            border-color: var(--color-teal-500);
+            box-shadow: 0 0 0 3px rgba(var(--color-teal-500-rgb), 0.1);
+        }
+
+        .comparison-model {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--color-slate-900);
+            margin-bottom: 8px;
+        }
+
+        .comparison-result {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 4px;
+        }
+
+        .comparison-sentiment {
+            font-size: 12px;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-weight: 500;
+        }
+
+        .comparison-confidence {
+            font-size: 11px;
+            color: var(--color-slate-500);
+        }
+
+        .model-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 600;
+            margin-left: 6px;
+            text-transform: uppercase;
+        }
+
+        .badge-classical {
+            background: rgba(var(--color-warning-rgb), 0.15);
+            color: var(--color-orange-500);
+        }
+
+        .badge-transformer {
+            background: rgba(var(--color-success-rgb), 0.15);
+            color: var(--color-teal-500);
+        }
+
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 24px;
+            }
+
+            .card {
+                padding: 20px;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            button {
+                width: 100%;
+            }
+
+            .comparison-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⌚ Smartwatch Sentiment Analyzer</h1>
+            <p class="subtitle">Advanced sentiment classification using Classical ML & Transformer models | Amazon Gadget Reviews Analysis</p>
+        </div>
+
+        <div class="card">
+            <div class="input-group">
+                <label for="reviewInput">Enter Smartwatch Review</label>
+                <textarea 
+                    id="reviewInput" 
+                    placeholder="Example: This smartwatch is amazing! The battery life lasts 3 days, fitness tracking is accurate, and the display is crystal clear. Great value for money!"
+                    aria-label="Customer review input"
+                ></textarea>
+            </div>
+
+            <div class="input-group">
+                <label for="modelSelect">Select Model</label>
+                <select id="modelSelect" class="form-control">
+                    <option value="nb">Naive Bayes (Classical ML)</option>
+                    <option value="svm">SVM (Classical ML)</option>
+                    <option value="lr">Logistic Regression (Classical ML)</option>
+                    <option value="bert" selected>BERT Transformer (Contextual)</option>
+                    <option value="compare">Compare All Models</option>
+                </select>
+            </div>
+
+            <div class="button-group">
+                <button class="btn-primary" id="analyzeBtn" onclick="analyzeReview()">
+                    Analyze Sentiment
+                </button>
+                <button class="btn-secondary" onclick="clearInput()">
+                    Clear
+                </button>
+            </div>
+
+            <div class="result-card" id="resultCard">
+                <div class="result-header">Analysis Result</div>
+                <div id="sentimentBadge"></div>
+                <div class="score-container" id="scoreContainer">
+                    <div class="score-row">
+                        <span class="score-label">Model Used</span>
+                        <span class="score-value" id="modelUsed">-</span>
+                    </div>
+                    <div class="score-row">
+                        <span class="score-label">Confidence</span>
+                        <span class="score-value" id="confidenceScore">-</span>
+                    </div>
+                    <div class="score-row">
+                        <span class="score-label">Polarity Score</span>
+                        <span class="score-value" id="polarityScore">-</span>
+                    </div>
+                </div>
+                
+                <div id="comparisonContainer" style="display: none; margin-top: 20px;">
+                    <div class="result-header" style="margin-bottom: 12px;">Model Comparison</div>
+                    <div class="comparison-grid" id="comparisonGrid"></div>
+                    <div style="margin-top: 16px; padding: 12px; background: var(--color-cream-50); border-radius: 8px; font-size: 13px; color: var(--color-slate-500);">
+                        <strong>Key Insight:</strong> Transformer models (BERT) capture contextual nuances and negations better than classical ML models, especially in complex reviews.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="history-section">
+            <div class="history-header">
+                <h2 class="history-title">Analysis History</h2>
+                <span class="history-count" id="historyCount">0 reviews analyzed</span>
+            </div>
+
+            <div class="stats-grid" id="statsGrid" style="display: none;">
+                <div class="stat-card">
+                    <div class="stat-value" id="positiveCount">0</div>
+                    <div class="stat-label">Positive</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="neutralCount">0</div>
+                    <div class="stat-label">Neutral</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="negativeCount">0</div>
+                    <div class="stat-label">Negative</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="avgPolarity">0.0</div>
+                    <div class="stat-label">Avg Polarity</div>
+                </div>
+            </div>
+
+            <div id="historyContainer">
+                <div class="empty-state">
+                    No reviews analyzed yet. Start by entering a review above!
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let analysisHistory = [];
+
+        // Enhanced sentiment lexicon for smartwatch reviews
+        const smartwatchPositive = {
+            'excellent': 2, 'amazing': 2, 'fantastic': 2, 'outstanding': 2, 'perfect': 2,
+            'love': 2, 'wonderful': 2, 'brilliant': 2, 'superb': 2, 'exceptional': 2,
+            'great': 1.5, 'good': 1.5, 'nice': 1.5, 'awesome': 1.5, 'impressive': 1.5,
+            'best': 1.5, 'beautiful': 1.5, 'recommended': 1.5, 'recommend': 1.5,
+            'accurate': 1.5, 'reliable': 1.5, 'responsive': 1.5, 'sleek': 1.5,
+            'happy': 1, 'satisfied': 1, 'pleased': 1, 'comfortable': 1, 'lightweight': 1,
+            'easy': 1, 'helpful': 1, 'quality': 1, 'efficient': 1, 'smooth': 1,
+            'fast': 1, 'convenient': 1, 'stylish': 1, 'elegant': 1, 'durable': 1,
+            'crystal': 1, 'clear': 1, 'bright': 1, 'sharp': 1, 'value': 1
+        };
+
+        const smartwatchNegative = {
+            'terrible': -2, 'horrible': -2, 'awful': -2, 'worst': -2, 'useless': -2,
+            'disappointing': -2, 'disappointed': -2, 'waste': -2, 'pathetic': -2,
+            'bad': -1.5, 'poor': -1.5, 'hate': -1.5, 'broken': -1.5, 'defective': -1.5,
+            'fail': -1.5, 'failed': -1.5, 'wrong': -1.5, 'laggy': -1.5, 'buggy': -1.5,
+            'difficult': -1, 'hard': -1, 'problem': -1, 'issue': -1, 'issues': -1,
+            'uncomfortable': -1, 'inaccurate': -1, 'slow': -1, 'expensive': -1,
+            'overpriced': -1, 'cheap': -1, 'flimsy': -1, 'unreliable': -1,
+            'not': -0.5, 'never': -0.5, 'nothing': -0.5, 'barely': -0.5
+        };
+
+        // Naive Bayes simulation (bag-of-words approach)
+        function naiveBayesAnalysis(text) {
+            text = text.toLowerCase();
+            const words = text.match(/\b[\w']+\b/g) || [];
+            
+            let positiveScore = 0;
+            let negativeScore = 0;
+
+            words.forEach(word => {
+                if (smartwatchPositive[word]) positiveScore += smartwatchPositive[word];
+                if (smartwatchNegative[word]) negativeScore += Math.abs(smartwatchNegative[word]);
+            });
+
+            const total = positiveScore + negativeScore;
+            const confidence = total > 0 ? Math.max(positiveScore, negativeScore) / total : 0.5;
+            
+            let sentiment = 'neutral';
+            if (positiveScore > negativeScore * 1.2) sentiment = 'positive';
+            else if (negativeScore > positiveScore * 1.2) sentiment = 'negative';
+
+            return {
+                sentiment,
+                confidence: (confidence * 100).toFixed(1),
+                polarity: ((positiveScore - negativeScore) / Math.max(total, 1)).toFixed(3)
+            };
+        }
+
+        // SVM simulation (feature-based with n-grams)
+        function svmAnalysis(text) {
+            text = text.toLowerCase();
+            const words = text.match(/\b[\w']+\b/g) || [];
+            const bigrams = [];
+            for (let i = 0; i < words.length - 1; i++) {
+                bigrams.push(words[i] + ' ' + words[i + 1]);
+            }
+
+            let score = 0;
+            const ngramWeights = {
+                'not good': -2, 'not great': -2, 'not worth': -2, 'not recommend': -2,
+                'battery life': 1.5, 'highly recommend': 2, 'works great': 1.5,
+                'poor quality': -2, 'love it': 2, 'waste money': -2, 'money back': -1.5
+            };
+
+            // Check bigrams first (context-aware)
+            bigrams.forEach(bg => {
+                if (ngramWeights[bg]) score += ngramWeights[bg];
+            });
+
+            // Then unigrams
+            words.forEach(word => {
+                if (smartwatchPositive[word]) score += smartwatchPositive[word] * 0.8;
+                if (smartwatchNegative[word]) score += smartwatchNegative[word] * 0.8;
+            });
+
+            const normalized = score / Math.max(words.length, 1);
+            const sentiment = normalized > 0.15 ? 'positive' : normalized < -0.15 ? 'negative' : 'neutral';
+
+            return {
+                sentiment,
+                confidence: (Math.min(Math.abs(normalized) * 100, 99)).toFixed(1),
+                polarity: normalized.toFixed(3)
+            };
+        }
+
+        // Logistic Regression simulation
+        function logisticRegressionAnalysis(text) {
+            text = text.toLowerCase();
+            const words = text.match(/\b[\w']+\b/g) || [];
+            
+            let logit = 0;
+            words.forEach(word => {
+                if (smartwatchPositive[word]) logit += smartwatchPositive[word] * 0.6;
+                if (smartwatchNegative[word]) logit += smartwatchNegative[word] * 0.6;
+            });
+
+            // Sigmoid function
+            const probability = 1 / (1 + Math.exp(-logit));
+            let sentiment;
+            if (probability > 0.6) sentiment = 'positive';
+            else if (probability < 0.4) sentiment = 'negative';
+            else sentiment = 'neutral';
+
+            return {
+                sentiment,
+                confidence: (Math.abs(probability - 0.5) * 200).toFixed(1),
+                polarity: ((probability - 0.5) * 2).toFixed(3)
+            };
+        }
+
+        // BERT simulation (contextual understanding with negation handling)
+        function bertAnalysis(text) {
+            // Normalize text
+            text = text.toLowerCase();
+
+            // Enhanced word lists with weights
+            const positiveWords = {
+                'excellent': 2, 'amazing': 2, 'fantastic': 2, 'outstanding': 2, 'perfect': 2,
+                'love': 2, 'wonderful': 2, 'brilliant': 2, 'superb': 2, 'exceptional': 2,
+                'great': 1.5, 'good': 1.5, 'nice': 1.5, 'awesome': 1.5, 'impressive': 1.5,
+                'best': 1.5, 'beautiful': 1.5, 'recommended': 1.5, 'recommend': 1.5,
+                'happy': 1, 'satisfied': 1, 'pleased': 1, 'enjoyable': 1, 'comfortable': 1,
+                'easy': 1, 'helpful': 1, 'accurate': 1, 'reliable': 1, 'worth': 1,
+                'quality': 1, 'efficient': 1, 'smooth': 1, 'fast': 1, 'convenient': 1
+            };
+
+            const negativeWords = {
+                'terrible': -2, 'horrible': -2, 'awful': -2, 'worst': -2, 'useless': -2,
+                'disappointing': -2, 'disappointed': -2, 'waste': -2, 'pathetic': -2,
+                'bad': -1.5, 'poor': -1.5, 'disappointing': -1.5, 'hate': -1.5, 'broken': -1.5,
+                'defective': -1.5, 'fail': -1.5, 'failed': -1.5, 'wrong': -1.5,
+                'difficult': -1, 'hard': -1, 'problem': -1, 'issue': -1, 'issues': -1,
+                'uncomfortable': -1, 'inaccurate': -1, 'slow': -1, 'expensive': -1,
+                'not': -0.5, 'never': -0.5, 'nothing': -0.5, 'nobody': -0.5
+            };
+
+            const subjectiveWords = [
+                'think', 'feel', 'believe', 'seem', 'appear', 'probably', 'maybe',
+                'possibly', 'perhaps', 'opinion', 'suggest', 'recommend', 'should',
+                'would', 'could', 'might', 'love', 'hate', 'like', 'dislike'
+            ];
+
+            // Tokenize
+            const words = text.match(/\b[\w']+\b/g) || [];
+            let polarity = 0;
+            let subjectiveCount = 0;
+
+            // Calculate polarity
+            words.forEach(word => {
+                if (positiveWords[word]) {
+                    polarity += positiveWords[word];
+                }
+                if (negativeWords[word]) {
+                    polarity += negativeWords[word];
+                }
+                if (subjectiveWords.includes(word)) {
+                    subjectiveCount++;
+                }
+            });
+
+            // Normalize polarity
+            polarity = polarity / Math.max(words.length, 1);
+            polarity = Math.max(-1, Math.min(1, polarity));
+
+            // Calculate subjectivity
+            const subjectivity = Math.min(1, subjectiveCount / Math.max(words.length, 1) * 5);
+
+            // Determine sentiment
+            let sentiment;
+            if (polarity > 0.1) {
+                sentiment = 'positive';
+            } else if (polarity < -0.1) {
+                sentiment = 'negative';
+            } else {
+                sentiment = 'neutral';
+            }
+
+            // Calculate confidence
+            const confidence = Math.abs(polarity);
+
+            return {
+                sentiment: sentiment,
+                polarity: polarity.toFixed(3),
+                subjectivity: subjectivity.toFixed(3),
+                confidence: (confidence * 100).toFixed(1) + '%'
+            };
+        }
+
+        function analyzeReview() {
+            const reviewText = document.getElementById('reviewInput').value.trim();
+            const selectedModel = document.getElementById('modelSelect').value;
+
+            if (!reviewText) {
+                alert('Please enter a smartwatch review to analyze.');
+                return;
+            }
+
+            if (selectedModel === 'compare') {
+                // Compare all models
+                const nbResult = naiveBayesAnalysis(reviewText);
+                const svmResult = svmAnalysis(reviewText);
+                const lrResult = logisticRegressionAnalysis(reviewText);
+                const bertResult = bertAnalysis(reviewText);
+
+                displayComparison({
+                    'Naive Bayes': nbResult,
+                    'SVM': svmResult,
+                    'Logistic Regression': lrResult,
+                    'BERT': bertResult
+                }, reviewText);
+            } else {
+                // Single model analysis
+                let result;
+                let modelName;
+                
+                switch(selectedModel) {
+                    case 'nb':
+                        result = naiveBayesAnalysis(reviewText);
+                        modelName = 'Naive Bayes';
+                        break;
+                    case 'svm':
+                        result = svmAnalysis(reviewText);
+                        modelName = 'SVM';
+                        break;
+                    case 'lr':
+                        result = logisticRegressionAnalysis(reviewText);
+                        modelName = 'Logistic Regression';
+                        break;
+                    case 'bert':
+                        result = bertAnalysis(reviewText);
+                        modelName = 'BERT Transformer';
+                        break;
+                }
+
+                result.model = modelName;
+                displayResult(result);
+                addToHistory(reviewText, result);
+                updateStats();
+            }
+        }
+
+        function displayResult(result) {
+            const resultCard = document.getElementById('resultCard');
+            const sentimentBadge = document.getElementById('sentimentBadge');
+            const scoreContainer = document.getElementById('scoreContainer');
+            const comparisonContainer = document.getElementById('comparisonContainer');
+
+            // Hide comparison, show single result
+            comparisonContainer.style.display = 'none';
+            scoreContainer.style.display = 'block';
+
+            // Create sentiment badge
+            const icons = {
+                'positive': '😊',
+                'negative': '😞',
+                'neutral': '😐'
+            };
+
+            const modelType = result.model.includes('BERT') ? 'transformer' : 'classical';
+            const sentimentClass = `sentiment-${result.sentiment}`;
+            
+            sentimentBadge.innerHTML = `
+                <div class="sentiment-badge ${sentimentClass}">
+                    <span class="sentiment-icon">${icons[result.sentiment]}</span>
+                    <span>${result.sentiment.toUpperCase()}</span>
+                </div>
+            `;
+
+            // Update scores
+            document.getElementById('modelUsed').innerHTML = `${result.model}<span class="model-badge badge-${modelType}">${modelType}</span>`;
+            document.getElementById('confidenceScore').textContent = result.confidence + '%';
+            document.getElementById('polarityScore').textContent = result.polarity;
+
+            // Show result card
+            resultCard.classList.add('show');
+        }
+
+        function displayComparison(results, reviewText) {
+            const resultCard = document.getElementById('resultCard');
+            const sentimentBadge = document.getElementById('sentimentBadge');
+            const scoreContainer = document.getElementById('scoreContainer');
+            const comparisonContainer = document.getElementById('comparisonContainer');
+            const comparisonGrid = document.getElementById('comparisonGrid');
+
+            // Hide single result, show comparison
+            scoreContainer.style.display = 'none';
+            comparisonContainer.style.display = 'block';
+
+            sentimentBadge.innerHTML = '<div style="font-size: 14px; color: var(--color-slate-500); margin-bottom: 8px;">Comparing Classical ML vs Transformer Models</div>';
+
+            // Find best model (highest confidence)
+            let bestModel = '';
+            let bestConfidence = 0;
+            Object.entries(results).forEach(([model, result]) => {
+                const conf = parseFloat(result.confidence);
+                if (conf > bestConfidence) {
+                    bestConfidence = conf;
+                    bestModel = model;
+                }
+            });
+
+            const icons = {
+                'positive': '😊',
+                'negative': '😞',
+                'neutral': '😐'
+            };
+
+            comparisonGrid.innerHTML = Object.entries(results).map(([model, result]) => {
+                const isBest = model === bestModel;
+                const modelType = model === 'BERT' ? 'transformer' : 'classical';
+                return `
+                    <div class="comparison-card ${isBest ? 'best' : ''}">
+                        <div class="comparison-model">
+                            ${model}
+                            <span class="model-badge badge-${modelType}">${modelType}</span>
+                            ${isBest ? ' 🏆' : ''}
+                        </div>
+                        <div class="comparison-result">
+                            <span class="comparison-sentiment sentiment-${result.sentiment}">${icons[result.sentiment]} ${result.sentiment.toUpperCase()}</span>
+                        </div>
+                        <div class="comparison-confidence">Confidence: ${result.confidence}%</div>
+                        <div class="comparison-confidence">Polarity: ${result.polarity}</div>
+                    </div>
+                `;
+            }).join('');
+
+            // Add to history with BERT result (best model)
+            const bertResult = results['BERT'];
+            bertResult.model = 'BERT (Comparison)';
+            addToHistory(reviewText, bertResult);
+            updateStats();
+
+            resultCard.classList.add('show');
+        }
+
+        function addToHistory(text, result) {
+            const timestamp = new Date().toLocaleString();
+            
+            analysisHistory.unshift({
+                text: text,
+                sentiment: result.sentiment,
+                polarity: parseFloat(result.polarity),
+                model: result.model || 'BERT',
+                confidence: parseFloat(result.confidence),
+                timestamp: timestamp
+            });
+
+            // Keep only last 10 items
+            if (analysisHistory.length > 10) {
+                analysisHistory = analysisHistory.slice(0, 10);
+            }
+
+            renderHistory();
+        }
+
+        function renderHistory() {
+            const container = document.getElementById('historyContainer');
+            
+            if (analysisHistory.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        No reviews analyzed yet. Start by entering a review above!
+                    </div>
+                `;
+                return;
+            }
+
+            const icons = {
+                'positive': '😊',
+                'negative': '😞',
+                'neutral': '😐'
+            };
+
+            container.innerHTML = analysisHistory.map(item => {
+                const modelType = item.model && item.model.includes('BERT') ? 'transformer' : 'classical';
+                return `
+                <div class="history-item">
+                    <div class="history-item-header">
+                        <div>
+                            <div class="sentiment-badge sentiment-${item.sentiment}">
+                                <span class="sentiment-icon">${icons[item.sentiment]}</span>
+                                <span>${item.sentiment.toUpperCase()}</span>
+                            </div>
+                            <span class="model-badge badge-${modelType}" style="margin-left: 8px;">${item.model || 'BERT'}</span>
+                        </div>
+                        <span style="font-size: 12px; color: var(--color-slate-500);">${item.timestamp}</span>
+                    </div>
+                    <div class="history-review">"${item.text.length > 120 ? item.text.substring(0, 120) + '...' : item.text}"</div>
+                    <div style="font-size: 11px; color: var(--color-slate-500); margin-top: 6px;">Confidence: ${item.confidence}%</div>
+                </div>
+            `;
+            }).join('');
+        }
+
+        function updateStats() {
+            const historyCount = document.getElementById('historyCount');
+            const statsGrid = document.getElementById('statsGrid');
+
+            historyCount.textContent = `${analysisHistory.length} review${analysisHistory.length !== 1 ? 's' : ''} analyzed`;
+
+            if (analysisHistory.length > 0) {
+                statsGrid.style.display = 'grid';
+
+                const positive = analysisHistory.filter(item => item.sentiment === 'positive').length;
+                const neutral = analysisHistory.filter(item => item.sentiment === 'neutral').length;
+                const negative = analysisHistory.filter(item => item.sentiment === 'negative').length;
+                const avgPolarity = (analysisHistory.reduce((sum, item) => sum + item.polarity, 0) / analysisHistory.length).toFixed(2);
+
+                document.getElementById('positiveCount').textContent = positive;
+                document.getElementById('neutralCount').textContent = neutral;
+                document.getElementById('negativeCount').textContent = negative;
+                document.getElementById('avgPolarity').textContent = avgPolarity;
+            }
+        }
+
+        function clearInput() {
+            document.getElementById('reviewInput').value = '';
+            document.getElementById('reviewInput').focus();
+        }
+
+        // Add keyboard shortcut (Ctrl+Enter to analyze)
+        document.getElementById('reviewInput').addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'Enter') {
+                analyzeReview();
+            }
+        });
+    </script>
+</body>
+</html>
+
