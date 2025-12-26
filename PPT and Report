@@ -1,0 +1,9 @@
+Smartwatch Sentiment Analyser
+
+This presentation explains the design and implementation of the
+Smartwatch Sentiment Analyser project. It covers the problem statement,
+dataset, preprocessing steps, machine learning and transformer models
+used, system architecture, results, and future enhancements.
+
+The project analyses smartwatch reviews and classifies them as
+Positive, Neutral, or Negative using NLP techniques.
